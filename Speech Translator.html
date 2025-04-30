@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Speech Translator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #dbe6f6, #c5796d);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+
+    .container {
+      background-color: white;
+      padding: 2rem 3rem;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+    }
+
+
+    h1 {
+      font-size: 1.8rem;
+      color: #333;
+      margin-bottom: 1rem;
+    }
+
+
+    select {
+      width: 100%;
+      padding: 0.7rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 1.5rem;
+    }
+
+
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+
+    #output {
+      margin-top: 2rem;
+      font-size: 1.1rem;
+      color: #333;
+      white-space: pre-wrap;
+    }
+
+
+    .icon {
+      margin-right: 8px;
+    }
+
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌍 Speech Translator</h1>
+
+
+
+
+  <label for="targetLang">Translate to:</label>
+  <select id="targetLang">
+    <option value="fr">French</option>
+    <option value="es">Spanish</option>
+    <option value="de">German</option>
+    <option value="hi">Hindi</option>
+    <option value="zh-CN">Chinese</option>
+    <option value="ta">Tamil</option>
+    <option value="en">English</option>
+    <!-- Add more as needed -->
+  </select>
+
+
+  <br><br>
+  <button onclick="startRecognition()">🎤 Speak</button>
+  <div id="output"></div>
+
+
+  <script>
+    const output = document.getElementById('output');
+    const targetLang = document.getElementById('targetLang');
+
+
+    function startRecognition() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'en-US'; // or auto-detect later
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+
+      output.innerText = "Listening...";
+
+
+      recognition.start();
+
+
+      recognition.onresult = async (event) => {
+        const spokenText = event.results[0][0].transcript;
+        output.innerText = `You said: "${spokenText}"`;
+
+
+        // Use Google Translate API here (you’ll need a backend for the API key)
+        const translatedText = await translateText(spokenText, targetLang.value);
+        output.innerText += `\n\nTranslated: "${translatedText}"`;
+
+
+        speak(translatedText, targetLang.value);
+      };
+
+
+      recognition.onerror = (err) => {
+        output.innerText = `Error: ${err.error}`;
+      };
+    }
+
+
+    async function translateText(text, targetLang) {
+      // This is a mock; use your server or a free API endpoint for real translation
+      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`);
+      const data = await res.json();
+      return data[0][0][0];
+    }
+
+
+    function speak(text, lang) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang;
+      speechSynthesis.speak(utterance);
+    }
+  </script>
+</body>
+</html>
